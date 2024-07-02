@@ -1,0 +1,22 @@
+Model BD2NN_mnist_random_fashion_random + dataset MNIST_random & FASHION_random: 
+ Forward Test Accuracy: 73.61%, Inverse Test Accuracy: 85.49%
+--------------------------------------------------
+Model BD2NN_mnist_random_fashion_random + dataset MNIST_0_5 & FASHION_0_5: 
+ Forward Test Accuracy: 72.90%, Inverse Test Accuracy: 86.40%
+--------------------------------------------------
+Model BD2NN_mnist_random_fashion_random + dataset MNIST_0_8 & FASHION_0_3: 
+ Forward Test Accuracy: 71.18%, Inverse Test Accuracy: 87.96%
+--------------------------------------------------
+Model BD2NN_mnist_random_fashion_random + dataset MNIST_0_9 & FASHION_0_9: 
+ Forward Test Accuracy: 77.19%, Inverse Test Accuracy: 86.96%
+--------------------------------------------------
+Model BD2NN_mnist_0_5_fashion_0_5 + dataset MNIST_0_5 & FASHION_0_5: 
+ Forward Test Accuracy: 83.34%, Inverse Test Accuracy: 91.62%
+--------------------------------------------------
+Model BD2NN_mnist_0_8_fashion_0_3 + dataset MNIST_0_8 & FASHION_0_3: 
+ Forward Test Accuracy: 81.86%, Inverse Test Accuracy: 91.72%
+--------------------------------------------------
+Model BD2NN_mnist_0_9_fashion_0_9 + dataset MNIST_0_9 & FASHION_0_9: 
+ Forward Test Accuracy: 84.02%, Inverse Test Accuracy: 92.17%
+--------------------------------------------------
+

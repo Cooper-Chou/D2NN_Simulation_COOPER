@@ -70,6 +70,8 @@ literature 是本项目的参考文献，可以对照项目文档最后的 refer
 
 硬件环境: `NVIDIA GeForce RTX 3090`（精仪科协服务器）
 
+
+
 数据集: MNIST 手写数字识别
 
 ## 代码实现
@@ -86,7 +88,7 @@ literature 是本项目的参考文献，可以对照项目文档最后的 refer
 
 可以看到自由空间传播的卷积效果对图象造成了一定模糊。
 
-菲涅尔传递函数方法可以用角谱法在傍轴近似下保留二阶小量得到。其原理详见 [Goodman: Introduction to Fourier Optics, Edition 4th](https://www.semanticscholar.org/paper/Introduction-to-Fourier-optics-Goodman/5e3eb22c476b889eecbb380d012231d819edf156)。其实现详见训练所用代码 `train.py`。
+菲涅尔传递函数方法可以用**角谱法在傍轴近似下保留二阶小量得到**。其原理详见 [Goodman: Introduction to Fourier Optics, Edition 4th](https://www.semanticscholar.org/paper/Introduction-to-Fourier-optics-Goodman/5e3eb22c476b889eecbb380d012231d819edf156)。其实现详见训练所用代码 `train.py`。
 
 `modulation_layer` 主要引入相位和振幅调制片。调制片与采样空间有着同样的 size。作为唯一可调参数的layer，在定义完各个层之后，相位与振幅调制的参数可以直接调用 `loss.backward()` 完成计算，使用 `optimizer.step()` 完成更新。
 
@@ -118,11 +120,11 @@ $\rm 5 \times propagation\_layer + 5 \times modulation\_layer + imaging\_layer$
 
 ### Parameters
 
-这里是固定参数，此处只列出参数及其代表的含义，其选择原因见"参数的选择原因"
+这里是固定参数，此处只列出参数及其代表的含义，其选择原因见 "参数的选择原因"
 
 光学参数
 
-```
+```python
 M = N = 250     # sampling count on each axis
 lmbda = 0.5e-6  # wavelength of coherent light
 L = 0.2         # the area to be illuminated
@@ -132,7 +134,7 @@ z = 100         # the propagation distance in free space
 
 在使用全部MNIST数据进行训练时的神经网络参数为：
 
-```
+```python
 learning_rate = 0.003
 epochs = 6
 batch_size = 128
@@ -144,25 +146,25 @@ batch_size = 128
 
 ![pre](./support_images/preprocessing.png)
 
-label的预处理在于把一个数字扩展成一个 dim = 10 的数组。若label = $i$, 则生成单位向量 $e_{i+1}$。
+label的预处理在于把一个数字扩展成一个 dim = 10 的数组。若label = $i$, 则生成单位向量 $e_{i+1}$。  
 
 预处理完成后保存为npy文件，便于在不同设备上的转移与读取。
 
 ### 数据读取
 
-小批量数据的读取可以直接通过 `np.load()` 完成，但MNIST的训练数据超出了GPU内存的限制，必须通过dataloader完成。具体代码参照 `train.py` or `train_am.py`。
+**小批量数据的读取可以直接通过 `np.load()` 完成，但MNIST的训练数据超出了GPU内存的限制，必须通过dataloader完成。** 具体代码参照 `train.py` or `train_am.py`。
 
 ## 模型表现及分析
 
 ### 训练表现
 
-以下结果是没有加入振幅调制，只有振幅调制的结果。加入振幅调制的结果将在下一板块"模型调优"进行讨论。
+以下结果是没有加入振幅调制，只有相位调制的结果。加入振幅调制的结果将在下一板块"模型调优"进行讨论。
 
 笔者一开始使用MNIST的前 $2\%$ 进行训练与测试，也即 $ \rm 1000 \times train + 200 \times validation + 200 \times test$。
 
 若使用参数
 
-```
+```python
 learning_rate = 0.003
 epochs = 20
 batch_size = 128
@@ -170,7 +172,7 @@ batch_size = 128
 
 一次训练及测试所需的时间大约为50s，方便调参。以下是其中一次的输出结果，其权重保存到了`weights_small.pt`中
 
-```
+```python
 Using cuda device
 Epoch [1/20], Training Loss: 0.1198, Training Accuracy: 70.10%, 
 ...
@@ -183,14 +185,14 @@ Test Accuracy: 90.50%
 
 笔者后来使用MNIST的全部进行训练与测试，也即 $ \rm 50000 \times train + 10000 \times validation + 10000 \times test$。使用参数
 
-```
+```python
 learning_rate = 0.003
 epochs = 6
 batch_size = 128
 ```
 
 一次训练及测试的结果大约为40min。以下是一次输出的结果，其权重保存到了`weights_large.pt`中。
-```
+```python
 Epoch [6/6], Training Loss: 0.0243, Training Accuracy: 92.86%, 
 Validation Loss: 0.0225, Validation Accuracy: 93.64%
 Test Accuracy: 92.65%
@@ -210,27 +212,27 @@ Test Accuracy: 92.65%
 
 + 若没有振幅调制
 
-```
+```python
 [[0.1320, 0.1467, 0.2757, 0.6138, 0.3394, 0.4097, 0.3318, 0.1327, 0.2697, 0.1574]]
 ```
 
 ![4](./support_images/3.png)
 
 
-```
+```python
 [[0.0817, 0.1322, 0.1069, 0.3428, 0.1222, 0.1302, 0.0683, 0.0961, 0.8899, 0.0956]]
 ```
 ![contra9](./support_images/8.png) 
 
 + 若加入振幅调制：
 
-```
+```python
 [[0.0813, 0.1146, 0.2029, 0.3622, 0.7564, 0.1387, 0.0544, 0.0728, 0.2183, 0.4007]]
 ```
 
 ![am_9](./support_images/am_4.png)
 
-```
+```python
 [[0.0088, 0.0123, 0.0308, 0.0656, 0.1741, 0.0357, 0.0339, 0.3735, 0.0609, 0.9047]]
 ```
 
@@ -356,7 +358,7 @@ Validation Loss: 0.1367, Validation Accuracy: 10.64%
 
 ![](./support_images/paralle.png)
 
-```
+```python
 weights_large_dn1n_feature20.pt
 Epoch [4/5], Training Loss: 0.0208, Training Accuracy: 93.37%, 
 Validation Loss: 0.0191, Validation Accuracy: 94.05%
@@ -387,7 +389,7 @@ Test Accuracy: 93.29%
 
 ### 光学参数
 
-```
+```python
 M = N = 250     # sampling count on each axis
 lmbda = 0.5e-6  # wavelength of coherent light
 L = 0.2         # the area to be illuminated
@@ -397,7 +399,7 @@ z = 100         # the propagation distance in free space
 
 参数 $w$ 事先确定，因袭 Computational 书中的选法，而 $L$ 的选择根据 Nyquist law 决定。要模拟现实光学条件，我们要对光场进行合适的采样。采样需要的范围要大于实际光场范围，其扩大的比值设为Q。菲涅尔数 $N_F = w ^2 / (z \times \lambda)$ 我们结合 Goodman: Introduction to Fourier Optics 中的图进行采样，选择Q略小于2。
 
-![sample](./support_images/sample.jpg)
+![sample](./support_images/sample_ex.png)
 
 这边我们的 $M$ 参数的选择有一定瑕疵，如果选的较大一些应该可以更大程度减少混叠 (aliasing) 效果应该更好。但考虑到训练成本、预处理成本均正比于 $M ^ 2$，这里我们使用 $M = 250$ 进行仿真，属于效率与性能的折衷之选。
 
