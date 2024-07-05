@@ -1,47 +1,45 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Main_Model.model_define import L, w, N, lmbda, z
+from model_define import device, N
+import torch
 
-def pixel_value_center(x, y, imgArray):
-    # Calculate the center of the image
-    rows, cols = imgArray.shape # (theoretically) 28, 28
-    center_x = rows // 2 #(theoretically) 14
-    center_y = cols // 2 #(theoretically) 14
-    x = x * rows
-    y = y * cols
-    
-    # Adjust the coordinates so that (0,0) is at the center
-    x_adjusted = center_x + round(x)
-    y_adjusted = center_y - round(y)
+def zoom_and_upsamp(origin_img_array, zooming_coe, canvas_width, canvas_height):
+    result_canvas = np.zeros((canvas_width, canvas_height), dtype=float)
+    origin_height, origin_width = origin_img_array.shape
+    croped_canvas_height = round(canvas_height * zooming_coe)
+    croped_canvas_width = round(canvas_width * zooming_coe)
 
-    # Check if the adjusted coordinates are within the image bounds
-    if 0 <= x_adjusted < rows and 0 <= y_adjusted < cols:
-        # Return 1 if pixel value is 255, otherwise 0
-        value = imgArray[x_adjusted, cols - y_adjusted - 1]
-    else:
-        # If the adjusted coordinates are outside the image bounds, return 0
-        value = 0
+    height_blank = (canvas_height-croped_canvas_height)//2
+    width_blank = (canvas_width-croped_canvas_width)//2
 
-    return value
+    for i in range(croped_canvas_height):
+        for j in range(croped_canvas_width):
+            result_canvas[(height_blank-1)+i][(width_blank-1)+j] = origin_img_array[round(i*(origin_height-1)/croped_canvas_height)][round(j*(origin_width-1)/croped_canvas_width)]
+
+    # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    # plt.figure()
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(origin_img_array, cmap='gray')
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(result_canvas, cmap='gray')
+    # plt.show()
+    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    return result_canvas
 
 
-def label_modify(batch_label):
+# 一次就处理一个batch的数据的!
+
+def label_modify(batch_label: np.ndarray) -> torch.tensor:
     # "mod" stands for modified
-    batch_label_mod = np.zeros([10, batch_label.shape[0]])
+    batch_label_mod = np.zeros([batch_label.shape[0], 10])
     for i in range(batch_label.shape[0]):
-        batch_label_mod[batch_label[i], i] = 1
-    return batch_label_mod
+        batch_label_mod[i, batch_label[i]] = 1
+    return torch.tensor(batch_label_mod).double().to(device)
 
-def u0_modify(batch_u0):
-    # print(batch_u0.shape)
-    x_axis = np.linspace(-L/2, L/2, N)
-    y_axis = np.linspace(-L/2, L/2, N)
-    batch_u0_mod = np.zeros((N, N, batch_u0.shape[0]),dtype=float)
+def u0_modify(batch_u0: np.ndarray, zooming_coefficient) -> torch.tensor:
+    batch_u0_mod = np.zeros((batch_u0.shape[0], N, N), dtype=float)
     for t in range(batch_u0.shape[0]):
-        ex = batch_u0[t]
         # change (28,28) this into the ideal shape of image, which is (28,28) for MNIST
-        img_array = np.reshape(ex, (28, 28))
-        for i in range(0, N):
-            for j in range(0, N):
-                batch_u0_mod[i][j][t] = pixel_value_center(x_axis[i] / (2*w), y_axis[j] / (2*w), img_array) # 此处x_axis[]和y_axis[]的值是在[-L/2, L/2]之间的, 2*w的值其实就是L/2, 所以 x_axis[i] / (2*w) 是处于[-1, 1]之间的, 也就是说这个值是归一化的, 表示图片的坐标相对位置
-    return batch_u0_mod
+        img_array = batch_u0[t,:,:]
+        batch_u0_mod[t,:,:] = zoom_and_upsamp(img_array, zooming_coefficient, N, N)
+    return torch.tensor(batch_u0_mod).double().to(device)

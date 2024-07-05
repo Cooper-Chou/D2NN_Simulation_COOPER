@@ -1,58 +1,66 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Main_Model.model_define import L, w, N, lmbda, z
+import sys
+sys.path.append("..") 
+# sys.path.append("D:\\OneDrive\\SUSTech\\MetaSurface_Lab\\Python Project\\D2NN_Simulation_COOPER\\Main_Model") 
+from Main_Model.model_define import L, N, lmbda, z
 
-# mnist.npy 中的数据是二维数组, (50000, 28x28), 这里把它转化为了 (50000, 28, 28), 还改变了一下大小
+dataset_name = ['FASHION','fashion'] # ['MNIST','mnist'] # 
 
-def pixel_value_center(x, y, imgArray):
-    # Calculate the center of the image
-    rows, cols = imgArray.shape # (theoretically) 28, 28
-    center_x = rows // 2 #(theoretically) 14
-    center_y = cols // 2 #(theoretically) 14
-    x = x * rows
-    y = y * cols
-    
-    # Adjust the coordinates so that (0,0) is at the center
-    x_adjusted = center_x + round(x)
-    y_adjusted = center_y - round(y)
+save_dir_1 = 'dataset/'+dataset_name[0]+'_processed_random/'
+# save_dir_1 = 'dataset/'+dataset_name[0]+'_processed/'
+save_dir_2 = [['u0_train/u0_train_', 0], ['u0_validation/u0_validation_', 1], ['u0_test/u0_test_', 2]] # 这个顺序很重要!
 
-    # Check if the adjusted coordinates are within the image bounds
-    if 0 <= x_adjusted < rows and 0 <= y_adjusted < cols:
-        # Return 1 if pixel value is 255, otherwise 0
-        value = imgArray[x_adjusted, cols - y_adjusted - 1]
-    else:
-        # If the adjusted coordinates are outside the image bounds, return 0
-        value = 0
+zooming_coefficient = 0.5
 
-    return value
 
+def zoom_and_upsamp(origin_img_array, zooming_coe, canvas_width, canvas_height):
+    result_canvas = np.zeros((canvas_width, canvas_height), dtype=float)
+    origin_height, origin_width = origin_img_array.shape
+    croped_canvas_height = round(canvas_height * zooming_coe)
+    croped_canvas_width = round(canvas_width * zooming_coe)
+
+    height_blank = (canvas_height-croped_canvas_height)//2
+    width_blank = (canvas_width-croped_canvas_width)//2
+
+    for i in range(croped_canvas_height):
+        for j in range(croped_canvas_width):
+            result_canvas[(height_blank-1)+i][(width_blank-1)+j] = origin_img_array[round(i*origin_height/croped_canvas_height)][round(i*origin_width/croped_canvas_width)]
+
+    # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    plt.figure()
+    plt.subplot(1, 2, 1)
+    plt.imshow(origin_img_array, cmap='gray')
+    plt.subplot(1, 2, 2)
+    plt.imshow(result_canvas, cmap='gray')
+    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    return result_canvas
 
 
 
 # load the data here
-mnist_data = np.load('dataset/MNIST/raw/mnist.npy', allow_pickle=True)
+origin_datasetS_28_28 = np.load('dataset/'+dataset_name[0]+'/'+dataset_name[1]+'.npy', allow_pickle=True)
 
 # [0][0] for train_data, [0][1] for train_label
 # [1][0] for validation_data, [1][1] for validation_label
 # [2][0] for test_data, [2][1] for test_label
 
-data = mnist_data[0][0]
+# data_train = mnist_data[0][0]
+# data_vali = mnist_data[1][0]
+# data_test = mnist_data[2][0]
 
-print(data.shape)
-x_axis = np.linspace(-L/2, L/2, N)
-y_axis = np.linspace(-L/2, L/2, N)
-u0 = np.zeros((N, N, data.shape[0]),dtype=float)
-for t in range(data.shape[0]):
-    if t % 100 == 0: # visualize the progress, making me FEEL GOOD!!
-        print("t = ", t,"in ", data.shape[0])
+for dir,idx in save_dir_2: # 依次处理 train, validation, test 数据集
+    origin_dataset_28_28 = origin_datasetS_28_28[idx][0]
+    for t in range(origin_dataset_28_28.shape[0]):
+        img_array = origin_dataset_28_28[t,:,:]
 
-    ex = data[t]
-    # change (28,28) this into the ideal shape of image, which is (28,28) for MNIST
-    img_array = np.reshape(ex, (28, 28))
-    for i in range(0, N):
-        for j in range(0, N):
-            u0[i][j][t] = pixel_value_center(x_axis[i] / (2*w), y_axis[j] / (2*w), img_array) # 此处x_axis[]和y_axis[]的值是在[-L/2, L/2]之间的, 2*w的值其实就是L/2, 所以 x_axis[i] / (2*w) 是处于[-1, 1]之间的, 也就是说这个值是归一化的, 表示图片的坐标相对位置
+        # random_covered_pctg = np.random.rand() * 0.8 + 0.2
 
-# change this accordingly
-np.save('processed_dataset/u0_train_all.npy', u0)
+        # dataset_250_250 = img_embedding(N,N, random_covered_pctg,random_covered_pctg, img_array) 
+        dataset_250_250 = zoom_and_upsamp(N,N, zooming_coefficient, zooming_coefficient, img_array) 
+        np.save(save_dir_1+dir+'%d.npy'%t, dataset_250_250)
+        
+        if t % 100 == 0: # visualize the progress, making me FEEL GOOD!!
+            print("t = ", t,"in ", origin_dataset_28_28.shape[0])
