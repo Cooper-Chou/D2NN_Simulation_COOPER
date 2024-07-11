@@ -80,7 +80,7 @@ print("************** SUCCESSFULLY LOADED!! **************")
 
 #%%
 # Initialize network, loss, and optimizer
-model = modef.OpticalNetwork(modef.M, modef.L, modef.lmbda, modef.z).to(modef.device)
+model = modef.OpticalNetwork(modef.L, modef.lmbda, modef.z).to(modef.device)
 loss_function = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 zooming_coefficient = 0.5
@@ -153,8 +153,8 @@ for epoch in range(epochs):
             batch_labels_for_loss = torch.cat((batch_labels, torch.zeros(batch_labels.shape[0],1).to(modef.device)), dim=1)
             loss = loss_function(outputs_for_loss, batch_labels_for_loss)
             val_running_loss_forward += loss.item()
-            _, predicted_labels = torch.max(outputs.data, 1)
-            _, true_labels = torch.max(batch_labels.data, 1)
+            _, predicted_labels = torch.max(outputs.detach(), 1)
+            _, true_labels = torch.max(batch_labels.detach(), 1)
             total_num_vali_forward += batch_labels.size(0)
             correct_num_vali_forward += (predicted_labels == true_labels).sum().item()
             
@@ -166,8 +166,8 @@ for epoch in range(epochs):
             batch_labels_for_loss = torch.cat((batch_labels, torch.zeros(batch_labels.shape[0],1).to(modef.device)), dim=1)
             loss = loss_function(outputs_for_loss, batch_labels_for_loss)
             val_running_loss_inverse += loss.item()
-            _, predicted_labels = torch.max(outputs.data, 1)
-            _, true_labels = torch.max(batch_labels.data, 1)
+            _, predicted_labels = torch.max(outputs.detach(), 1)
+            _, true_labels = torch.max(batch_labels.detach(), 1)
             total_num_vali_inverse += batch_labels.size(0)
             correct_num_vali_inverse += (predicted_labels == true_labels).sum().item()
 
@@ -203,8 +203,8 @@ with torch.no_grad():
         batch_labels = dpi.label_modify(data_enum[0][0])
         batch_u0 = dpi.u0_modify(data_enum[0][1], zooming_coefficient=zooming_coefficient)
         outputs, _ = model(batch_u0, inverse=False)
-        _, predicted_labels = torch.max(outputs.data, 1)
-        _, true_labels = torch.max(batch_labels.data, 1)
+        _, predicted_labels = torch.max(outputs.detach(), 1)
+        _, true_labels = torch.max(batch_labels.detach(), 1)
         total_num_tested_forward += batch_labels.size(0)
         correct_num_tested_forward += (predicted_labels == true_labels).sum().item()
         
@@ -212,8 +212,8 @@ with torch.no_grad():
         batch_labels = dpi.label_modify(data_enum[1][0])
         batch_u0 = dpi.u0_modify(data_enum[1][1], zooming_coefficient=zooming_coefficient)
         outputs, _ = model(batch_u0, inverse=True)
-        _, predicted_labels = torch.max(outputs.data, 1)
-        _, true_labels = torch.max(batch_labels.data, 1)
+        _, predicted_labels = torch.max(outputs.detach(), 1)
+        _, true_labels = torch.max(batch_labels.detach(), 1)
         total_num_tested_inverse += batch_labels.size(0)
         correct_num_tested_inverse += (predicted_labels == true_labels).sum().item()
 

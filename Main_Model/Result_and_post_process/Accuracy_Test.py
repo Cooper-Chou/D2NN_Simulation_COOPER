@@ -53,7 +53,7 @@ for round_idx in range(len(model_list)):
     print("successfully loaded!!")
 
     m_state_dict = torch.load(dir_prefix+model_list[round_idx]+'.pt')
-    D2NN = modef.OpticalNetwork(M=modef.M, L=modef.L, lmbda=modef.lmbda, z=modef.z).to(modef.device)
+    D2NN = modef.OpticalNetwork(M=modef.mesh_num, L=modef.L, lmbda=modef.lmbda, z=modef.z).to(modef.device)
     D2NN.load_state_dict(m_state_dict)
     D2NN.eval()
     print(D2NN)
@@ -73,8 +73,8 @@ for round_idx in range(len(model_list)):
             batch_labels = data_enum[0][0]
             batch_data = data_enum[0][1]
             outputs = D2NN(batch_data, inverse=False)
-            _, predicted_labels = torch.max(outputs.data, 1)
-            _, true_labels = torch.max(batch_labels.data, 1)
+            _, predicted_labels = torch.max(outputs.detach(), 1)
+            _, true_labels = torch.max(batch_labels.detach(), 1)
             confusion_matrix_forward += confusion_matrix(y_true=true_labels.cpu(), y_pred=predicted_labels.cpu(),labels=np.array(range(10)))
             total_num_tested_forward += batch_labels.size(0)
             correct_num_tested_forward += (predicted_labels == true_labels).sum().item()
@@ -83,8 +83,8 @@ for round_idx in range(len(model_list)):
             batch_labels = data_enum[1][0]
             batch_data = data_enum[1][1]
             outputs = D2NN(batch_data, inverse=True)
-            _, predicted_labels = torch.max(outputs.data, 1)
-            _, true_labels = torch.max(batch_labels.data, 1)
+            _, predicted_labels = torch.max(outputs.detach(), 1)
+            _, true_labels = torch.max(batch_labels.detach(), 1)
             confusion_matrix_inverse += confusion_matrix(y_true=true_labels.cpu(), y_pred=predicted_labels.cpu(), labels=np.array(range(10)))
             total_num_tested_inverse += batch_labels.size(0)
             correct_num_tested_inverse += (predicted_labels == true_labels).sum().item()

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from model_define import device, N
+from model_define import device, mesh_num
 import torch
 
 def zoom_and_upsamp(origin_img_array, zooming_coe, canvas_width, canvas_height):
@@ -37,9 +37,9 @@ def label_modify(batch_label: np.ndarray) -> torch.tensor:
     return torch.tensor(batch_label_mod).double().to(device)
 
 def u0_modify(batch_u0: np.ndarray, zooming_coefficient) -> torch.tensor:
-    batch_u0_mod = np.zeros((batch_u0.shape[0], N, N), dtype=float)
+    batch_u0_mod = np.zeros((batch_u0.shape[0], mesh_num, mesh_num), dtype=float)
     for t in range(batch_u0.shape[0]):
         # change (28,28) this into the ideal shape of image, which is (28,28) for MNIST
         img_array = batch_u0[t,:,:]
-        batch_u0_mod[t,:,:] = zoom_and_upsamp(img_array, zooming_coefficient, N, N)
+        batch_u0_mod[t,:,:] = zoom_and_upsamp(img_array, zooming_coefficient, mesh_num, mesh_num)
     return torch.tensor(batch_u0_mod).double().to(device)

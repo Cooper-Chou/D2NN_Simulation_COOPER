@@ -5,12 +5,15 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import model_define as modef
 import os
+from tqdm import tqdm
 from datetime import datetime
 
 torch.cuda.empty_cache() # 清空显存!
 
-torch.autograd.set_detect_anomaly(True) # 检测梯度异常
-
+# *********************改了代码的话一定要改成True!!!! 
+# 严重影响性能，仅在Debug中使用!!!!!!
+torch.autograd.set_detect_anomaly(False) # 检测梯度异常  
+# *********************
 
 #%%
 # -------------------load data----------------------------
@@ -32,11 +35,11 @@ class CustomNpyDataset(Dataset):
     
 # Hyperparameters
 learning_rate = 0.0003
-epochs = 4
-batch_size = 32
+epochs = 1
+batch_size = 128
 
-dataset_dir_mnist = "dataset/MNIST_processed_random"
-dataset_dir_fashion = "dataset/FASHION_processed_random"
+dataset_dir_mnist = "dataset/MNIST_processed_0_5"
+dataset_dir_fashion = "dataset/FASHION_processed_0_5"
 
 MNIST_train_dataset = CustomNpyDataset(dataset_dir_mnist+"/u0_train", "u0_train_", dataset_dir_mnist+"/label_train_all.npy")
 MNIST_train_loader = DataLoader(MNIST_train_dataset, batch_size=batch_size, shuffle=True)
@@ -60,7 +63,7 @@ print("successfully loaded!!")
 
 #%%
 # Initialize network, loss, and optimizer
-model = modef.OpticalNetwork(modef.M, modef.L, modef.lmbda, modef.z).to(modef.device)
+model = modef.OpticalNetwork(modef.L, modef.lmbda, modef.z).to(modef.device)
 loss_function = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -74,7 +77,8 @@ for epoch in range(epochs):
     running_loss_forward = 0.0
     running_loss_inverse = 0.0
 
-    for idx_enum,data_enum in enumerate(zip(FASHION_train_loader, MNIST_train_loader)):
+    process_bar = tqdm(enumerate(zip(FASHION_train_loader, MNIST_train_loader)),desc=f"EPOCH {epoch+1} --- TRAINING -> ", total=len(FASHION_train_loader), ncols=160, position=0)
+    for idx_enum,data_enum in process_bar:
         # zip 可以把两个可迭代对象(这里是 dataloader)一个一个对应起来, 像梳子那样(详情上网查), 然后返回的也是可以迭代的; enumerate 可以在返回可迭代对象的同时返回索引(具体上网查), 反正这两个函数可方便了
         # 在这个 for 循环里, 每次迭代 data_enum 都是一个元组, 元组里面有两个元素, 分别是两个 dataloader 里的一个 batch 的数据
 
@@ -82,37 +86,30 @@ for epoch in range(epochs):
         batch_labels = data_enum[0][0]
         batch_data = data_enum[0][1]
         optimizer.zero_grad()
-        outputs, surrounding_intensity = model(batch_data, inverse=False) # 注意! 这里的surrounding_intensity没有被归一化, 它的值也许很大, 这也可以认为是变相为周围的杂散光场添加了更高的权重(?)
-        outputs_for_loss = torch.cat((outputs, surrounding_intensity), dim=1) # 在 outputs 后面加一列周围的杂散光场, 用于计算 loss
+        outputs = model(batch_data, inverse=False) 
         batch_labels_for_loss = torch.cat((batch_labels, torch.zeros(batch_labels.shape[0],1).to(modef.device)), dim=1) # 在 batch_labels 后面加一列 0, 对应于杂散光场的目标值
-        loss = loss_function(outputs_for_loss, batch_labels_for_loss)
+        loss = loss_function(outputs, batch_labels_for_loss)
         loss.backward() # backward() 函数是 tensor 自带的函数, 所有的 lossfunction forward() 以后都返回 tensor 类型的结果! 而且可能返回的 loss 已经是开过 require_grad 和 retain_graph 的了, 后面 optimizer 就会直接根据 loss 的梯度图来迭代
         optimizer.step()
         running_loss_forward += loss.item()
-# ------------------------------------------------------------------
+
+        # ------------------------------------------------------------------
         # print("Running Loss Forward: ", loss.item())
-# ------------------------------------------------------------------
+        # ------------------------------------------------------------------
         
         # -----------------FASHION -> inverse-----------------
         batch_labels = data_enum[1][0]
         batch_data = data_enum[1][1]
         optimizer.zero_grad()
-        outputs, surrounding_intensity = model(batch_data, inverse=True)
-        outputs_for_loss = torch.cat((outputs, surrounding_intensity), dim=1)
+        outputs = model(batch_data, inverse=True)
         batch_labels_for_loss = torch.cat((batch_labels, torch.zeros(batch_labels.shape[0],1).to(modef.device)), dim=1)
-        loss = loss_function(outputs_for_loss, batch_labels_for_loss)
+        loss = loss_function(outputs, batch_labels_for_loss)
         loss.backward()
         optimizer.step()
-        running_loss_inverse += loss.item()
-# ------------------------------------------------------------------
-        # print("Running Loss Inverse: ", loss.item())
-        # print("------------------------------------------------------------------")
-# ------------------------------------------------------------------            
+        running_loss_inverse += loss.item() 
 
-        if idx_enum % 20 == 0:
-            print("Finished ", idx_enum, " MNIST batches and ", idx_enum, " FASHION batches, in total ", 2*idx_enum, " batches!!!!!")
-
-
+        process_bar.set_postfix(Loss_Forward = running_loss_forward, Loss_Inverse = running_loss_inverse)
+        process_bar.update()  # 默认参数n=1，每update一次，进度+n
 
     avg_train_loss_forward = running_loss_forward / len(MNIST_train_loader) # 每个 epoch 计算一次
     avg_train_loss_inverse = running_loss_inverse / len(FASHION_train_loader)
@@ -130,35 +127,35 @@ for epoch in range(epochs):
 
     print("--------------------------Start Validating!!--------------------------")
     with torch.no_grad():
-        for idx_enum,data_enum in enumerate(zip(FASHION_validation_loader, MNIST_validation_loader)):
+        process_bar = tqdm(enumerate(zip(FASHION_validation_loader, MNIST_validation_loader)),desc=f"EPOCH {epoch+1} --- TESTING -> ", total=len(FASHION_validation_loader), ncols=150, position=0)
+        for idx_enum,data_enum in process_bar:
             
             # -----------------MNIST -> forward-----------------
             batch_labels = data_enum[0][0]
             batch_data = data_enum[0][1]
-            outputs, surrounding_intensity = model(batch_data, inverse=False)
-            outputs_for_loss = torch.cat((outputs, surrounding_intensity), dim=1)
+            outputs = model(batch_data, inverse=False)
             batch_labels_for_loss = torch.cat((batch_labels, torch.zeros(batch_labels.shape[0],1).to(modef.device)), dim=1)
-            loss = loss_function(outputs_for_loss, batch_labels_for_loss)
+            loss = loss_function(outputs, batch_labels_for_loss)
             val_running_loss_forward += loss.item()
-            _, predicted_labels = torch.max(outputs.data, 1)
-            _, true_labels = torch.max(batch_labels.data, 1)
+            _, predicted_labels = torch.max(outputs.detach()[:,0:10], 1)
+            _, true_labels = torch.max(batch_labels.detach(), 1)
             total_num_vali_forward += batch_labels.size(0)
             correct_num_vali_forward += (predicted_labels == true_labels).sum().item()
             
             # -----------------FASHION -> inverse-----------------
             batch_labels = data_enum[1][0]
             batch_data = data_enum[1][1]
-            outputs, surrounding_intensity = model(batch_data, inverse=True)
-            outputs_for_loss = torch.cat((outputs, surrounding_intensity), dim=1)
+            outputs = model(batch_data, inverse=True)
             batch_labels_for_loss = torch.cat((batch_labels, torch.zeros(batch_labels.shape[0],1).to(modef.device)), dim=1)
-            loss = loss_function(outputs_for_loss, batch_labels_for_loss)
+            loss = loss_function(outputs, batch_labels_for_loss)
             val_running_loss_inverse += loss.item()
-            _, predicted_labels = torch.max(outputs.data, 1)
-            _, true_labels = torch.max(batch_labels.data, 1)
+            _, predicted_labels = torch.max(outputs.detach()[:,0:10], 1)
+            _, true_labels = torch.max(batch_labels.detach(), 1)
             total_num_vali_inverse += batch_labels.size(0)
             correct_num_vali_inverse += (predicted_labels == true_labels).sum().item()
-            if idx_enum % 50 == 0:
-                print("Validated ", idx_enum, " MNIST batches and ", idx_enum, " FASHION batches, in total ", 2*idx_enum, " batches!!!!!")
+
+            process_bar.set_postfix(Loss_Forward = val_running_loss_forward, Loss_Inverse = val_running_loss_inverse)
+            process_bar.update()  # 默认参数n=1，每update一次，进度+n
 
     val_accuracy_forward = 100 * correct_num_vali_forward / total_num_vali_forward
     val_accuracy_inverse = 100 * correct_num_vali_inverse / total_num_vali_inverse
@@ -182,27 +179,29 @@ total_num_tested_inverse = 0
 
 print("--------------------------Start Final Testing!!--------------------------")
 with torch.no_grad():
+    process_bar = tqdm(enumerate(zip(FASHION_test_loader, MNIST_test_loader)),desc="FINAL-TESTING -> ", total=len(FASHION_test_loader), ncols=160, position=0)
     for idx_enum,data_enum in enumerate(zip(FASHION_test_loader, MNIST_test_loader)):
             
         # -----------------MNIST -> forward-----------------
         batch_labels = data_enum[0][0]
         batch_data = data_enum[0][1]
-        outputs, _ = model(batch_data, inverse=False)
-        _, predicted_labels = torch.max(outputs.data, 1)
-        _, true_labels = torch.max(batch_labels.data, 1)
+        outputs = model(batch_data, inverse=False)
+        _, predicted_labels = torch.max(outputs.detach()[:,0:10], 1)
+        _, true_labels = torch.max(batch_labels.detach(), 1)
         total_num_tested_forward += batch_labels.size(0)
         correct_num_tested_forward += (predicted_labels == true_labels).sum().item()
         
         # -----------------FASHION -> inverse-----------------
         batch_labels = data_enum[1][0]
         batch_data = data_enum[1][1]
-        outputs, _ = model(batch_data, inverse=True)
-        _, predicted_labels = torch.max(outputs.data, 1)
-        _, true_labels = torch.max(batch_labels.data, 1)
+        outputs = model(batch_data, inverse=True)
+        _, predicted_labels = torch.max(outputs.detach()[:,0:10], 1)
+        _, true_labels = torch.max(batch_labels.detach(), 1)
         total_num_tested_inverse += batch_labels.size(0)
         correct_num_tested_inverse += (predicted_labels == true_labels).sum().item()
-        if idx_enum % 50 == 0:
-            print("Final Tested ", idx_enum, " MNIST batches and ", idx_enum, " FASHION batches, in total ", 2*idx_enum, " batches!!!!!")
+
+        process_bar.set_postfix(Finished_Batches = idx_enum+1)
+        process_bar.update()  # 默认参数n=1，每update一次，进度+n
 
 print(f"Forward Test Accuracy: {100 * correct_num_tested_forward / total_num_tested_forward:.2f}%, Inverse Test Accuracy: {100 * correct_num_tested_inverse / total_num_tested_inverse:.2f}%")
 
@@ -215,5 +214,6 @@ print("*********************************************************************")
 print("*********************************************************************")
 print("*********************************************************************")
 
-torch.save(model.state_dict(), "Main_Model/BD2NN_mnist_random_fashion_random.pt")
-
+saved_name = "BD2NN_mnist_0_5_fashion_0_5_z_0_1_SC_2_3.pt"
+torch.save(model.state_dict(), "Main_Model/Result_and_post_process/"+saved_name)
+print("Saved as ", saved_name, "!")
