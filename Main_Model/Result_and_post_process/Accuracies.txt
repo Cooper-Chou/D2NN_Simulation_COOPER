@@ -1,22 +1,138 @@
-Model BD2NN_mnist_random_fashion_random + dataset MNIST_random & FASHION_random: 
- Forward Test Accuracy: 73.61%, Inverse Test Accuracy: 85.49%
+Generated at: 2024-07-17 14:42:50.939082
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.5_SN_50_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [62.67%], Inverse Test Accuracy: [75.05%]
 --------------------------------------------------
-Model BD2NN_mnist_random_fashion_random + dataset MNIST_0_5 & FASHION_0_5: 
- Forward Test Accuracy: 72.90%, Inverse Test Accuracy: 86.40%
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.5_SN_50_SS_50_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [13.65%], Inverse Test Accuracy: [20.38%]
 --------------------------------------------------
-Model BD2NN_mnist_random_fashion_random + dataset MNIST_0_8 & FASHION_0_3: 
- Forward Test Accuracy: 71.18%, Inverse Test Accuracy: 87.96%
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.7_SN_100_SS_50_Norm_L2_ZC_0.5]: 
+Forward Test Accuracy: [13.38%], Inverse Test Accuracy: [24.38%]
 --------------------------------------------------
-Model BD2NN_mnist_random_fashion_random + dataset MNIST_0_9 & FASHION_0_9: 
- Forward Test Accuracy: 77.19%, Inverse Test Accuracy: 86.96%
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.7_SN_150_SS_25_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [63.63%], Inverse Test Accuracy: [76.50%]
 --------------------------------------------------
-Model BD2NN_mnist_0_5_fashion_0_5 + dataset MNIST_0_5 & FASHION_0_5: 
- Forward Test Accuracy: 83.34%, Inverse Test Accuracy: 91.62%
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.8_SN_150_SS_50_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [15.02%], Inverse Test Accuracy: [23.70%]
 --------------------------------------------------
-Model BD2NN_mnist_0_8_fashion_0_3 + dataset MNIST_0_8 & FASHION_0_3: 
- Forward Test Accuracy: 81.86%, Inverse Test Accuracy: 91.72%
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.8_SN_200_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [66.92%], Inverse Test Accuracy: [78.70%]
 --------------------------------------------------
-Model BD2NN_mnist_0_9_fashion_0_9 + dataset MNIST_0_9 & FASHION_0_9: 
- Forward Test Accuracy: 84.02%, Inverse Test Accuracy: 92.17%
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_0_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [75.00%], Inverse Test Accuracy: [85.46%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_0_SS_50_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [28.21%], Inverse Test Accuracy: [23.59%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_10_SS_50_L1]: 
+ Forward Test Accuracy: [6.58%], Inverse Test Accuracy: [17.87%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_10_SS_50_L2]: 
+ Forward Test Accuracy: [9.40%], Inverse Test Accuracy: [17.56%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_120_SS_50_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [10.54%], Inverse Test Accuracy: [12.46%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_150_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [61.46%], Inverse Test Accuracy: [72.97%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_20_SS_50_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [10.00%], Inverse Test Accuracy: [9.07%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_50_SS_50_Norm_L1_ZC_0.5]: 
+ Forward Test Accuracy: [6.65%], Inverse Test Accuracy: [16.41%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_90_SS_50_Norm_L1_ZC_0.5]: 
+ Forward Test Accuracy: [3.87%], Inverse Test Accuracy: [22.45%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_90_SS_50_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [3.51%], Inverse Test Accuracy: [16.96%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SS_25]: 
+ Forward Test Accuracy: [38.68%], Inverse Test Accuracy: [29.15%]
 --------------------------------------------------
 
+
+
+Generated at: 2024-07-20 01:04:23.018655
+Model [BD2NN_z_0.03_L_0.213_SC_1_mesh_500_SW_1_SN_100_SS_25_Norm_L2_ZC_0.5_LT_Cross]: 
+ Forward Test Accuracy: [72.78%], Inverse Test Accuracy: [84.74%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_1_mesh_500_SW_1_SN_100_SS_25_Norm_L2_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [71.75%], Inverse Test Accuracy: [83.80%]
+--------------------------------------------------
+
+
+Generated at: 2024-07-20 01:26:43.097518
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.5_SN_50_SS_25_Norm_L2_ZC_0.5_LT_Cross]: 
+ Forward Test Accuracy: [62.67%], Inverse Test Accuracy: [75.05%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.7_SN_100_SS_25_Norm_L1_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [26.98%], Inverse Test Accuracy: [38.16%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.7_SN_100_SS_25_Norm_L2_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [63.33%], Inverse Test Accuracy: [76.21%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.7_SN_150_SS_25_Norm_L2_ZC_0.5]: 
+ Forward Test Accuracy: [63.63%], Inverse Test Accuracy: [76.50%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.8_SN_200_SS_25_Norm_L2_ZC_0.5_LT_Cross]: 
+ Forward Test Accuracy: [66.92%], Inverse Test Accuracy: [78.70%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_0.8_SN_200_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [66.92%], Inverse Test Accuracy: [78.70%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_0_SS_25_Norm_L2_ZC_0.5_LT_Cross]: 
+ Forward Test Accuracy: [75.00%], Inverse Test Accuracy: [85.46%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_0_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [72.02%], Inverse Test Accuracy: [83.71%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_100_SS_25_Norm_L1_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [27.01%], Inverse Test Accuracy: [33.36%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_100_SS_25_Norm_L2_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [63.08%], Inverse Test Accuracy: [73.00%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_150_SS_25_Norm_L2_ZC_0.5_LT_Cross]: 
+ Forward Test Accuracy: [61.46%], Inverse Test Accuracy: [72.97%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.213_SC_2_mesh_500_SW_1_SN_150_SS_25_Norm_L2_ZC_0.5_LT_CrossEntropy]: 
+ Forward Test Accuracy: [61.46%], Inverse Test Accuracy: [72.97%]
+--------------------------------------------------
+
+
+
+Generated at: 2024-07-21 17:20:39.669539
+Model [BD2NN_z_0.03_L_0.08_PSC_1_mesh_188_SW_0.8_SN_100_SS_19_Norm_MAX_ZC_0.5_LT_Cross_OT_Clps]: 
+ Forward Test Accuracy: [81.08%], Inverse Test Accuracy: [91.54%]
+--------------------------------------------------
+
+
+Generated at: 2024-07-21 21:41:03.256944
+Model [BD2NN_z_0.03_L_0.08_PSC_1_mesh_188_SW_0.8_SN_100_SS_19_Norm_MAX_ZC_0.5_LT_Cross_OT_Clps]: 
+ Forward Test Accuracy: [81.46%], Inverse Test Accuracy: [91.75%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.08_PSC_1_mesh_188_SW_0.8_SN_100_SS_9_Norm_MAX_ZC_0.5_LT_Cross_OT_Clps]: 
+ Forward Test Accuracy: [80.89%], Inverse Test Accuracy: [90.92%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.08_PSC_1_mesh_188_SW_0.8_SN_100_SS_9_Norm_MAX_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [80.34%], Inverse Test Accuracy: [90.10%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.08_PSC_1_mesh_188_SW_1_SN_100_SS_19_Norm_L2_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [67.04%], Inverse Test Accuracy: [81.13%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.08_PSC_1_mesh_188_SW_1_SN_100_SS_9_Norm_L2_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [70.62%], Inverse Test Accuracy: [84.64%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.12_PSC_1_mesh_282_SW_0.8_SN_100_SS_14_Norm_MAX_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [76.58%], Inverse Test Accuracy: [87.58%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.12_PSC_1_mesh_282_SW_1_SN_100_SS_14_Norm_L2_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [72.79%], Inverse Test Accuracy: [86.05%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.12_PSC_1_mesh_282_SW_1_SN_100_SS_14_Norm_MAX_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [77.42%], Inverse Test Accuracy: [87.68%]
+--------------------------------------------------
+Model [BD2NN_z_0.03_L_0.1_PSC_1_mesh_235_SW_0.8_SN_100_SS_12_Norm_MAX_ZC_0.5_LT_Cross_OT_Full]: 
+ Forward Test Accuracy: [78.39%], Inverse Test Accuracy: [88.69%]
+--------------------------------------------------

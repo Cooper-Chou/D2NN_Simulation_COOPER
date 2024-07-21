@@ -1,45 +1,57 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from model_define import device, mesh_num
+from model_define import device
 import torch
 
-def zoom_and_upsamp(origin_img_array, zooming_coe, canvas_width, canvas_height):
-    result_canvas = np.zeros((canvas_width, canvas_height), dtype=float)
-    origin_height, origin_width = origin_img_array.shape
-    croped_canvas_height = round(canvas_height * zooming_coe)
-    croped_canvas_width = round(canvas_width * zooming_coe)
+class data_prepro_inline():
+    def __init__(self, mesh_num, start_x_pctg, start_y_pctg, square_size, zooming_coefficient, origin_size=28):
+        self.origin_size = origin_size
+        self.mesh_num = mesh_num
+        cropped_size = round(mesh_num*zooming_coefficient)
 
-    height_blank = (canvas_height-croped_canvas_height)//2
-    width_blank = (canvas_width-croped_canvas_width)//2
+        self.zoom_upsamp_mat_left = torch.zeros((mesh_num, origin_size), dtype=torch.double, device=device)
+        self.zoom_upsamp_mat_right = torch.zeros((origin_size, mesh_num), dtype=torch.double, device=device)
+        for i in range(cropped_size):
+            self.zoom_upsamp_mat_left[i+(mesh_num-cropped_size)//2, round(i*(origin_size-1)/(cropped_size-1))] = 1
+            self.zoom_upsamp_mat_right[round(i*(origin_size-1)/(cropped_size-1)), i+(mesh_num-cropped_size)//2] = 1
 
-    for i in range(croped_canvas_height):
-        for j in range(croped_canvas_width):
-            result_canvas[(height_blank-1)+i][(width_blank-1)+j] = origin_img_array[round(i*(origin_height-1)/croped_canvas_height)][round(j*(origin_width-1)/croped_canvas_width)]
+        middle_coor = mesh_num // 2
+        # 十个目标点的坐标
+        self.start_x = start_x_pctg*square_size + middle_coor
+        self.start_y = start_y_pctg*square_size + middle_coor
 
-    # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    # plt.figure()
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(origin_img_array, cmap='gray')
-    # plt.subplot(1, 2, 2)
-    # plt.imshow(result_canvas, cmap='gray')
-    # plt.show()
-    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    return result_canvas
+        self.start_x = self.start_x.astype(int)
+        self.start_y = self.start_y.astype(int)
+        self.square_size = square_size
+
+    # 一次就处理一个batch的数据的!
+    def batch_u0_modify(self, batch_u0: torch.tensor) -> torch.tensor:
+        batch_u0_mod = torch.matmul(torch.matmul(self.zoom_upsamp_mat_left, batch_u0), self.zoom_upsamp_mat_right)
+        # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        # plt.figure()
+        # plt.subplot(1, 2, 1)
+        # plt.imshow(batch_u0[0], cmap='gray')
+        # plt.subplot(1, 2, 2)
+        # plt.imshow(bath_u0_mod[0], cmap='gray')
+        # plt.show()
+        # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        return batch_u0_mod
 
 
-# 一次就处理一个batch的数据的!
+    def get_batch_labels_for_loss(self, batch_labels, output_type, surr_inten_num) -> torch.tensor:
+        if output_type == "Full":
+            labels_for_loss = torch.zeros((batch_labels.shape[0],self.mesh_num,self.mesh_num), dtype=float).to(device)
+            for i in range(batch_labels.shape[0]):
+                labels_for_loss[i, self.start_x[batch_labels[i]]:self.start_x[batch_labels[i]]+self.square_size, self.start_y[batch_labels[i]]:self.start_y[batch_labels[i]]+self.square_size] = 1
+                # batch_labels[i] 既是标签值, 也作为索引!
+            return labels_for_loss.reshape(labels_for_loss.shape[0], labels_for_loss.shape[1]*labels_for_loss.shape[2])
+        
+        elif output_type == "Clps":
+            labels_for_loss = torch.zeros((batch_labels.shape[0],10+surr_inten_num), dtype=float).to(device)
+            # 在 batch_labels 后面加一列 0, 对应于杂散光场的目标值
+            for i in range(batch_labels.shape[0]):
+                labels_for_loss[i, batch_labels[i]] = 1
+            return labels_for_loss
+        else:
+            return None
 
-def label_modify(batch_label: np.ndarray) -> torch.tensor:
-    # "mod" stands for modified
-    batch_label_mod = np.zeros([batch_label.shape[0], 10])
-    for i in range(batch_label.shape[0]):
-        batch_label_mod[i, batch_label[i]] = 1
-    return torch.tensor(batch_label_mod).double().to(device)
-
-def u0_modify(batch_u0: np.ndarray, zooming_coefficient) -> torch.tensor:
-    batch_u0_mod = np.zeros((batch_u0.shape[0], mesh_num, mesh_num), dtype=float)
-    for t in range(batch_u0.shape[0]):
-        # change (28,28) this into the ideal shape of image, which is (28,28) for MNIST
-        img_array = batch_u0[t,:,:]
-        batch_u0_mod[t,:,:] = zoom_and_upsamp(img_array, zooming_coefficient, mesh_num, mesh_num)
-    return torch.tensor(batch_u0_mod).double().to(device)
