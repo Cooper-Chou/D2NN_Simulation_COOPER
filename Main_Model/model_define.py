@@ -30,13 +30,13 @@ surr_inten_num = 100
 norm_type = 'MAX' # 'L2' # L1 # 
 zooming_coefficient = 0.5
 
-output_for_loss_type = "Full" # "Clps" # 
+output_for_loss_type = "Clps" # "Full" # 
 # FullPlane and Collapsed
 
 loss_type = "Cross" # "MSE" # 
 # CrossEntropy and MeanSquaredError
 
-square_size = round(mesh_num / 10)
+square_size = round(mesh_num / 20)
 
 start_x_pctg = np.array([-2.5, -2.5, -2.5, -0.5, -0.5, -0.5, -0.5, 1.5, 1.5, 1.5])
 start_y_pctg = np.array([-2.5, -0.5, 1.5, -3.5, -1.5, 0.5, 2.5, -2.5, -0.5, 1.5])
@@ -143,10 +143,11 @@ class modulation_layer(nn.Module):
             plt.subplot(2,3,self.order+1)
             plt.imshow((torch.abs(u)**2).detach().cpu().numpy()[0,:,:])
 
-        phase_values_temp = torch.matmul(self.phase_values, self.inverse_mat) if inverse else self.phase_values # 反向处理的时候要把调制层乘上这个inverse_mat镜面转一下, 不然就不符合物理情况
+        phase_values_temp = torch.matmul(torch.sigmoid(self.phase_values)*2, self.inverse_mat) if inverse else torch.sigmoid(self.phase_values)*2
+        # 反向处理的时候要把调制层乘上这个inverse_mat镜面转一下, 不然就不符合物理情况; 同时把相位值约束到0~2PI之间
 
         # Create the complex modulation matrix
-        modulation_matrix = torch.exp(1j * 2 * np.pi * torch.matmul(torch.matmul(self.upsamp_mat_left, phase_values_temp),self.upsamp_mat_right)) # torch.complex64
+        modulation_matrix = torch.exp(1j * np.pi * torch.matmul(torch.matmul(self.upsamp_mat_left, phase_values_temp),self.upsamp_mat_right)) # torch.complex64
 
         # Modulate the input tensor
         modulated_tensor = u * modulation_matrix

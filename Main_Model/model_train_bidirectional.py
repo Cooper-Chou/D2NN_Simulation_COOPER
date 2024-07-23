@@ -17,10 +17,9 @@ torch.autograd.set_detect_anomaly(False) # 检测梯度异常
 # *********************
 
 # Hyperparameters
-learning_rate = 0.00005 # 0.0003
-epochs = 10
+learning_rate = 0.001
+epochs = 20
 
-print("--------------------------Start Training!!--------------------------")
 #%%
 # para_combinations = list(itertools.product(modef.surr_inten_weight, modef.norm_type, modef.zooming_coefficient, modef.output_for_loss_type))
 # for surr_inten_weight, norm_type, zooming_coefficient, output_for_loss_type in para_combinations:
@@ -29,17 +28,17 @@ print("--------------------------Start Training!!--------------------------")
 model = modef.OpticalNetwork(L=modef.L, lmbda=modef.lmbda, z=modef.z, square_size=modef.square_size, mesh_num=modef.mesh_num, para_scale_coe=modef.para_scale_coe, output_for_loss_type=modef.output_for_loss_type).to(modef.device)
 loss_function = nn.MSELoss() if modef.loss_type == "MSE" else nn.CrossEntropyLoss() # X.Lin 本人说可以换成交叉熵, 效果更好
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-prepro = dpi.data_prepro_inline(mesh_num=modef.mesh_num, start_x_pctg=modef.start_x_pctg, start_y_pctg=modef.start_y_pctg, square_size=modef.square_size, zooming_coefficient=modef.zooming_coefficient)
+prepro = dpi.data_prepro_inline(modef.mesh_num, modef.start_x_pctg, modef.start_y_pctg, modef.square_size, modef.zooming_coefficient)
 
 best_avrg_accuracy = 0.0
 best_dict = model.state_dict()
 best_epoch = 0
 
-saved_name = f"BD2NN_z_{modef.z}_L_{modef.L}_PSC_{modef.para_scale_coe}_mesh_{modef.mesh_num}_SW_{modef.surr_inten_weight}_SN_{modef.surr_inten_num}_SS_{modef.square_size}_Norm_{modef.norm_type}_ZC_{modef.zooming_coefficient}_LT_{modef.loss_type}_OT_{modef.output_for_loss_type}.pt"
+saved_name = f"BD2NN_z_{modef.z}_L_{modef.L}_PSC_{modef.para_scale_coe}_mesh_{modef.mesh_num}_SW_{modef.surr_inten_weight}_SN_{modef.surr_inten_num}_SS_{modef.square_size}_Norm_{modef.norm_type}_ZC_{modef.zooming_coefficient}_LT_{modef.loss_type}_OT_{modef.output_for_loss_type}_PH-FA.pt"
 
 # Training loop
 for epoch in range(epochs):
-    print(f"epoch: {epoch+1}/{epochs}")
+    print(f"-------------------------- [EPOCH: {epoch+1}/{epochs}] --------------------------")
     # Training phase
     model.train()
     running_loss_forward = 0.0
@@ -90,8 +89,7 @@ for epoch in range(epochs):
     correct_num_vali_inverse = 0
     total_num_vali_inverse = 0
 
-
-    print("--------------------------Start Validating!!--------------------------")
+    # ---------------------Start Validating!!---------------------
     with torch.no_grad():
         process_bar = tqdm(enumerate(zip(FASHION_test_loader, MNIST_test_loader)),desc=f"EPOCH {epoch+1} --- TESTING -> ", total=len(FASHION_test_loader), ncols=150, position=0)
         for idx_enum,data_enum in process_bar:
@@ -141,6 +139,7 @@ print("Finished training and validation @ ", datetime.now().strftime("%H:%M:%S")
 #%%
 # 所有 epoch 完成以后还需要最终 test 一次, 以及保存模型参数
 # Compute the correct rate of the model
+model.load_state_dict(best_dict )
 model.eval()
 correct_num_tested_forward = 0
 total_num_tested_forward = 0

@@ -9,8 +9,8 @@ class data_prepro_inline():
         self.mesh_num = mesh_num
         cropped_size = round(mesh_num*zooming_coefficient)
 
-        self.zoom_upsamp_mat_left = torch.zeros((mesh_num, origin_size), dtype=torch.double, device=device)
-        self.zoom_upsamp_mat_right = torch.zeros((origin_size, mesh_num), dtype=torch.double, device=device)
+        self.zoom_upsamp_mat_left = torch.zeros((mesh_num, origin_size), dtype=torch.complex128, device=device)
+        self.zoom_upsamp_mat_right = torch.zeros((origin_size, mesh_num), dtype=torch.complex128, device=device)
         for i in range(cropped_size):
             self.zoom_upsamp_mat_left[i+(mesh_num-cropped_size)//2, round(i*(origin_size-1)/(cropped_size-1))] = 1
             self.zoom_upsamp_mat_right[round(i*(origin_size-1)/(cropped_size-1)), i+(mesh_num-cropped_size)//2] = 1

@@ -14,9 +14,10 @@ batch_size = 32
 # -------------------load data----------------------------
 
 class CustomNpyDataset_Inline(Dataset):
-    def __init__(self, data_np_array, type_tag:str):
+    def __init__(self, data_np_array, type_tag:str, convert_to_phase=False):
         super(CustomNpyDataset_Inline, self).__init__()
         self.type_tag = type_tag
+        self.convert_to_phase = convert_to_phase
 
         # print(data_np_array[0][0].shape)
         # print(data_np_array[0][1].shape)
@@ -29,6 +30,9 @@ class CustomNpyDataset_Inline(Dataset):
             self.label_np_array = data_np_array[1][1]
         else:
             print("Invalid type_tag!!")
+
+        if self.convert_to_phase:
+            self.u0_np_array = 1*np.exp(1j*self.u0_np_array*2*np.pi/256)
             
         # [0][0] for train_data, [0][1] for train_label
         # [1][0] for test_data, [1][1] for test_label
@@ -41,7 +45,7 @@ class CustomNpyDataset_Inline(Dataset):
     def __getitem__(self, idx):
         u0 = self.u0_np_array[idx]
         labels = self.label_np_array[idx]
-        return torch.tensor(labels).int().to(modef.device), torch.tensor(u0).double().to(modef.device)
+        return torch.tensor(labels, dtype=int, device=modef.device), torch.tensor(u0, dtype=torch.complex128, device=modef.device)
     
 
 class CustomNpyDataset_Separate(Dataset):
@@ -85,10 +89,10 @@ if prepro_inline_flag:
     MNIST_test_dataset = CustomNpyDataset_Inline(dataset_mnist, "test")
     MNIST_test_loader = DataLoader(MNIST_test_dataset, batch_size=batch_size, shuffle=True)
     # -----------------------------------------------------------------------------------------------------------------------------
-    FASHION_train_dataset = CustomNpyDataset_Inline(dataset_fashion, "train")
+    FASHION_train_dataset = CustomNpyDataset_Inline(dataset_fashion, "train", convert_to_phase=True)
     FASHION_train_loader = DataLoader(FASHION_train_dataset, batch_size=batch_size, shuffle=True)
 
-    FASHION_test_dataset = CustomNpyDataset_Inline(dataset_fashion, "test")
+    FASHION_test_dataset = CustomNpyDataset_Inline(dataset_fashion, "test", convert_to_phase=True)
     FASHION_test_loader = DataLoader(FASHION_test_dataset, batch_size=batch_size, shuffle=True)
 
 

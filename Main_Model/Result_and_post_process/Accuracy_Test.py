@@ -23,7 +23,7 @@ torch.autograd.set_detect_anomaly(False) # 测试就不检测梯度异常了, �
 
 
 parent_dir = 'Main_Model\\Result_and_post_process\\'
-model_name_list = glob.glob(parent_dir+'BD2NN*.pt')
+model_name_list = glob.glob(parent_dir+'BD2NN*a.pt')
 for idx in range(len(model_name_list)):
     model_name_list[idx] = model_name_list[idx][len(parent_dir):-3]
 
@@ -35,7 +35,18 @@ with open('Main_Model/Result_and_post_process/Accuracies.txt', 'a', encoding='ut
     file.close()
 
 def get_paras_from_name(model_name:str):
-    _,_,z,_,L,_,PSC,_,mesh,_,SW,_,SN,_,SS,_,Norm,_,ZC,_,LT,_,OT = model_name.split('_', maxsplit=-1)
+    para_list = model_name.split('_', maxsplit=-1)
+    z = para_list[2]
+    L = para_list[4]
+    PSC = para_list[6]
+    mesh = para_list[8]
+    SW = para_list[10]
+    SN = para_list[12]
+    SS = para_list[14]
+    Norm = para_list[16]
+    ZC = para_list[18]
+    LT = para_list[20]
+    OT = para_list[22]
     return float(z), float(L), float(PSC), int(mesh), float(SW), int(SN), int(SS), Norm, float(ZC), LT, OT
 
 
@@ -47,7 +58,7 @@ for round_idx in range(len(model_name_list)):
     z,L,para_scale_coe,mesh_num,surr_inten_weight,surr_inten_num,square_size,norm_type,zooming_coefficient,loss_type,output_for_loss_type = get_paras_from_name(model_name_list[round_idx])
     print("mesh_num = ",mesh_num, "para_scale_coe = ",para_scale_coe)
 
-    prepro = dpi.data_prepro_inline(mesh_num=mesh_num, zooming_coefficient=zooming_coefficient)
+    prepro = dpi.data_prepro_inline(mesh_num, modef.start_x_pctg, modef.start_y_pctg, square_size, zooming_coefficient)
     D2NN = modef.OpticalNetwork(L=L, lmbda=modef.lmbda, z=z, square_size=square_size, mesh_num=mesh_num, para_scale_coe=para_scale_coe, output_for_loss_type=output_for_loss_type).to(modef.device)
     D2NN.load_state_dict(m_state_dict)
     D2NN.eval()
